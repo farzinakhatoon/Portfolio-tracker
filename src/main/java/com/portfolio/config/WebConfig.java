@@ -11,6 +11,10 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         // Replace with the actual frontend URL (e.g., CodeSandbox or other
         // environments)
-        registry.addMapping("/**").allowedOrigins("https://rpd2nf.csb.app/");
+        registry.addMapping("/**")
+        .allowedOrigins("https://rpd2nf.csb.app/")
+        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+        .allowedHeaders("*");
+
     }
 }
