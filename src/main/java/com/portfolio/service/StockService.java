@@ -9,7 +9,10 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class StockService {
@@ -104,5 +107,20 @@ public class StockService {
             totalValue += currentPrice * stock.getQuantity();
         }
         return totalValue;
+    }
+    // Get top-performing stock
+    public Stock getTopPerformingStock() {
+        return getAllStocks().stream()
+                .max(Comparator.comparingDouble(stock -> getRealTimeStockPrice(stock.getTicker()) - stock.getBuyPrice()))
+                .orElse(null);
+    }
+
+    // Get portfolio distribution
+    public Map<String, Double> getPortfolioDistribution() {
+        double totalValue = getTotalPortfolioValue();
+        return getAllStocks().stream().collect(Collectors.toMap(
+                Stock::getTicker,
+                stock -> (getRealTimeStockPrice(stock.getTicker()) * stock.getQuantity()) / totalValue * 100
+        ));
     }
 }
