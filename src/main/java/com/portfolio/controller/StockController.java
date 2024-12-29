@@ -11,7 +11,7 @@ import java.util.List;
 @RequestMapping("/api/stocks")
 public class StockController {
 
-    @GetMapping("/")
+    @GetMapping("/welcome")
     public String welcome() {
         return "Welcome to the Portfolio Tracker API!";
     }
