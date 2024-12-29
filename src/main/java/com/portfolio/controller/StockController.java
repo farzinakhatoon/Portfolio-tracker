@@ -68,4 +68,3 @@ public class StockController {
         return stockService.getPortfolioDistribution();
     }
 }
-}
