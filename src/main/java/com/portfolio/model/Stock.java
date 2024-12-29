@@ -45,7 +45,6 @@ public class Stock {
         this.buyPrice = buyPrice;
     }
 
-    @Transient
         private double currentPrice;
         
         public double getCurrentPrice() {
