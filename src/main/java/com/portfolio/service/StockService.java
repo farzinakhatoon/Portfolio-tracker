@@ -36,8 +36,13 @@ public class StockService {
 
     // Get stock by ticker
     public Stock getStockByTicker(String ticker) {
-        return stockRepository.findById(ticker).orElse(null);
-    }
+        Stock stock = stockRepository.findById(ticker).orElse(null);
+        if (stock != null) {
+            stock.setCurrentPrice(getRealTimeStockPrice(ticker));
+        }
+        return stock;
+}
+
 
     // Update stock information
     public Stock updateStock(String ticker, Stock updatedStock) {
