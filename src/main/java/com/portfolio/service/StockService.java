@@ -105,14 +105,16 @@ public class StockService {
     }
 
     // Calculate total portfolio value
-    public double getTotalPortfolioValue() {
-        double totalValue = 0.0;
-        for (Stock stock : getAllStocks()) {
-            double currentPrice = getRealTimeStockPrice(stock.getTicker());
-            totalValue += currentPrice * stock.getQuantity();
+            public double getTotalPortfolioValue() {
+            double totalValue = 0.0;
+            for (Stock stock : getAllStocks()) {
+                double currentPrice = getRealTimeStockPrice(stock.getTicker());
+                stock.setCurrentPrice(currentPrice); // Set the current price
+                totalValue += currentPrice * stock.getQuantity();
+            }
+            return totalValue;
         }
-        return totalValue;
-    }
+
     // Get top-performing stock
     public Stock getTopPerformingStock() {
         return getAllStocks().stream()
