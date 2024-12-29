@@ -44,4 +44,16 @@ public class Stock {
     public void setBuyPrice(double buyPrice) {
         this.buyPrice = buyPrice;
     }
+
+    @Transient
+        private double currentPrice;
+        
+        public double getCurrentPrice() {
+            return currentPrice;
+        }
+        
+        public void setCurrentPrice(double currentPrice) {
+            this.currentPrice = currentPrice;
+}
+
 }
