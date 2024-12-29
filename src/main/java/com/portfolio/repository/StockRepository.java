@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface StockRepository extends JpaRepository<Stock, String> {
     // Custom query methods can be added here if needed
+        void deleteByTicker(String ticker);
+
 }
