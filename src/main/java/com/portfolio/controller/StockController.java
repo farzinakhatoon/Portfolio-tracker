@@ -38,6 +38,12 @@ public class StockController {
         return stockService.getStockByTicker(ticker);
     }
 
+    // Inside StockController.java
+        @GetMapping("/real-time/{ticker}")
+        public double getRealTimeStockPrice(@PathVariable String ticker) {
+            return stockService.getRealTimeStockPrice(ticker);
+        }
+
     // Update stock information
     @PutMapping("/{ticker}")
     public Stock updateStock(@PathVariable String ticker, @RequestBody Stock stock) {
