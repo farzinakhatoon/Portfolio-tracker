@@ -10,7 +10,7 @@ RUN mvn dependency:go-offline
 
 # Copy the entire project and build it
 COPY . .
-RUN mvn package
+RUN mvn clen package
 
 # Use a lightweight base image for running the application
 FROM eclipse-temurin:21-jre
