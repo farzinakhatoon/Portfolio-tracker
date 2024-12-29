@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/stocks")
@@ -54,4 +55,17 @@ public class StockController {
     public double getTotalPortfolioValue() {
         return stockService.getTotalPortfolioValue();
     }
+
+     // Get top-performing stock
+    @GetMapping("/top-performing")
+    public Stock getTopPerformingStock() {
+        return stockService.getTopPerformingStock();
+    }
+
+    // Get portfolio distribution
+    @GetMapping("/portfolio-distribution")
+    public Map<String, Double> getPortfolioDistribution() {
+        return stockService.getPortfolioDistribution();
+    }
+}
 }
