@@ -2,15 +2,28 @@ package com.portfolio.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
+@Table(name = "stocks")
 public class Stock {
 
     @Id
+    @NotBlank(message = "Ticker cannot be blank.")
     private String ticker;
+
+    @NotBlank(message = "Stock name cannot be blank.")
     private String name;
+
+    @Min(value = 1, message = "Quantity must be at least 1.")
     private int quantity;
+
+    @Min(value = 0, message = "Buy price cannot be negative.")
     private double buyPrice;
+
+    private double currentPrice;
 
     // Getters and Setters
     public String getTicker() {
@@ -45,14 +58,11 @@ public class Stock {
         this.buyPrice = buyPrice;
     }
 
-        private double currentPrice;
-        
-        public double getCurrentPrice() {
-            return currentPrice;
-        }
-        
-        public void setCurrentPrice(double currentPrice) {
-            this.currentPrice = currentPrice;
-}
+    public double getCurrentPrice() {
+        return currentPrice;
+    }
 
+    public void setCurrentPrice(double currentPrice) {
+        this.currentPrice = currentPrice;
+    }
 }
