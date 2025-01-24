@@ -6,12 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/stocks")
+@CrossOrigin(origins = "http://localhost:3000") // Allow requests from your frontend
 public class StockController {
 
     @Autowired
@@ -25,12 +28,12 @@ public class StockController {
 
     // Add a new stock
     @PostMapping
-    public ResponseEntity<Stock> addStock(@RequestBody Stock stock) {
+    public ResponseEntity<?> addStock(@Valid @RequestBody Stock stock) {
         try {
             Stock addedStock = stockService.addStock(stock);
             return ResponseEntity.status(HttpStatus.CREATED).body(addedStock);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
@@ -42,23 +45,33 @@ public class StockController {
 
     // Get stock by ticker
     @GetMapping("/{ticker}")
-    public ResponseEntity<Stock> getStock(@PathVariable String ticker) {
+    public ResponseEntity<?> getStock(@PathVariable String ticker) {
         Stock stock = stockService.getStockByTicker(ticker);
-        return stock != null ? ResponseEntity.ok(stock) : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        return stock != null 
+            ? ResponseEntity.ok(stock) 
+            : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Stock not found for ticker: " + ticker);
     }
 
     // Update stock information
     @PutMapping("/{ticker}")
-    public ResponseEntity<Stock> updateStock(@PathVariable String ticker, @RequestBody Stock stock) {
-        Stock updatedStock = stockService.updateStock(ticker, stock);
-        return updatedStock != null ? ResponseEntity.ok(updatedStock) : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    public ResponseEntity<?> updateStock(@PathVariable String ticker, @Valid @RequestBody Stock stock) {
+        try {
+            Stock updatedStock = stockService.updateStock(ticker, stock);
+            return ResponseEntity.ok(updatedStock);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
     // Delete stock by ticker
     @DeleteMapping("/{ticker}")
-    public ResponseEntity<Void> deleteStock(@PathVariable String ticker) {
-        stockService.deleteStock(ticker);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteStock(@PathVariable String ticker) {
+        try {
+            stockService.deleteStock(ticker);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
     // Get total portfolio value
@@ -69,9 +82,11 @@ public class StockController {
 
     // Get top-performing stock
     @GetMapping("/top-performing")
-    public ResponseEntity<Stock> getTopPerformingStock() {
+    public ResponseEntity<?> getTopPerformingStock() {
         Stock topStock = stockService.getTopPerformingStock();
-        return topStock != null ? ResponseEntity.ok(topStock) : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        return topStock != null 
+            ? ResponseEntity.ok(topStock) 
+            : ResponseEntity.status(HttpStatus.NOT_FOUND).body("No stocks found.");
     }
 
     // Get portfolio distribution
@@ -85,6 +100,12 @@ public class StockController {
     public ResponseEntity<List<Stock>> initializePortfolio() {
         return ResponseEntity.ok(stockService.initializePortfolio());
     }
+
+    // Handle validation errors
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        String errorMessage = ex.getBindingResult().getFieldError().getDefaultMessage();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+    }
 }
 
-   
