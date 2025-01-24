@@ -1,89 +1,88 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" 
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
-         http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+package com.portfolio.controller;
 
-    <groupId>com.portfolio</groupId>
-    <artifactId>portfolio-tracker</artifactId>
-    <version>1.0.0</version>
-    <packaging>jar</packaging>
+import com.portfolio.model.Stock;
+import com.portfolio.service.StockService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-    <name>Portfolio Tracker</name>
-    <description>Stock Portfolio Tracker Application</description>
+import java.util.List;
+import java.util.Map;
 
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.1.4</version>
-        <relativePath/> <!-- Lookup parent from repository -->
-    </parent>
+@RestController
+@RequestMapping("/api/stocks")
+public class StockController {
 
-    <properties>
-        <java.version>17</java.version>
-    </properties>
+    @Autowired
+    private StockService stockService;
 
-    <dependencies>
-        <!-- Spring Boot Starter Web -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
+    // Welcome message
+    @GetMapping("/welcome")
+    public String welcome() {
+        return "Welcome to the Portfolio Tracker API!";
+    }
 
-        <!-- Spring Boot DevTools -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-devtools</artifactId>
-            <scope>runtime</scope>
-        </dependency>
+    // Add a new stock
+    @PostMapping
+    public ResponseEntity<Stock> addStock(@RequestBody Stock stock) {
+        try {
+            Stock addedStock = stockService.addStock(stock);
+            return ResponseEntity.status(HttpStatus.CREATED).body(addedStock);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
 
-        <!-- Spring Boot Starter Data JPA -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
+    // Get all stocks
+    @GetMapping
+    public ResponseEntity<List<Stock>> getAllStocks() {
+        return ResponseEntity.ok(stockService.getAllStocks());
+    }
 
-        <!-- H2 Database (For development/testing) -->
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>runtime</scope>
-        </dependency>
+    // Get stock by ticker
+    @GetMapping("/{ticker}")
+    public ResponseEntity<Stock> getStock(@PathVariable String ticker) {
+        Stock stock = stockService.getStockByTicker(ticker);
+        return stock != null ? ResponseEntity.ok(stock) : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
 
-        <!-- MySQL Driver -->
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <scope>runtime</scope>
-        </dependency>
+    // Update stock information
+    @PutMapping("/{ticker}")
+    public ResponseEntity<Stock> updateStock(@PathVariable String ticker, @RequestBody Stock stock) {
+        Stock updatedStock = stockService.updateStock(ticker, stock);
+        return updatedStock != null ? ResponseEntity.ok(updatedStock) : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
 
-        <!-- Spring Boot Starter Test -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
+    // Delete stock by ticker
+    @DeleteMapping("/{ticker}")
+    public ResponseEntity<Void> deleteStock(@PathVariable String ticker) {
+        stockService.deleteStock(ticker);
+        return ResponseEntity.noContent().build();
+    }
 
-        <!-- Validation API -->
-        <dependency>
-            <groupId>jakarta.validation</groupId>
-            <artifactId>jakarta.validation-api</artifactId>
-        </dependency>
+    // Get total portfolio value
+    @GetMapping("/portfolio-value")
+    public ResponseEntity<Double> getTotalPortfolioValue() {
+        return ResponseEntity.ok(stockService.getTotalPortfolioValue());
+    }
 
-        <!-- Lombok (optional, for reducing boilerplate code) -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
-    </dependencies>
+    // Get top-performing stock
+    @GetMapping("/top-performing")
+    public ResponseEntity<Stock> getTopPerformingStock() {
+        Stock topStock = stockService.getTopPerformingStock();
+        return topStock != null ? ResponseEntity.ok(topStock) : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
-</project>
+    // Get portfolio distribution
+    @GetMapping("/portfolio-distribution")
+    public ResponseEntity<Map<String, Double>> getPortfolioDistribution() {
+        return ResponseEntity.ok(stockService.getPortfolioDistribution());
+    }
+
+    // Initialize portfolio with 5 random stocks
+    @PostMapping("/initialize")
+    public ResponseEntity<List<Stock>> initializePortfolio() {
+        return ResponseEntity.ok(stockService.initializePortfolio());
+    }
+}
