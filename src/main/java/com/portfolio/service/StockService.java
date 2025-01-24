@@ -3,15 +3,11 @@ package com.portfolio.service;
 import com.portfolio.model.Stock;
 import com.portfolio.repository.StockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,12 +16,16 @@ public class StockService {
     @Autowired
     private StockRepository stockRepository;
 
-    private static final String API_KEY = "50ZA1HDKN8G0WOCD";
-    private static final String API_URL = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=%s&interval=5min&apikey="
-            + API_KEY;
+    @Value("${api.key}")
+    private String apiKey;
 
-    // Add a new stock
+    private static final String API_URL = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=%s&apikey=%s";
+
+    // Add stock
     public Stock addStock(Stock stock) {
+        if (stock.getQuantity() <= 0 || stock.getBuyPrice() < 0) {
+            throw new IllegalArgumentException("Invalid stock data.");
+        }
         return stockRepository.save(stock);
     }
 
@@ -36,15 +36,10 @@ public class StockService {
 
     // Get stock by ticker
     public Stock getStockByTicker(String ticker) {
-        Stock stock = stockRepository.findById(ticker).orElse(null);
-        if (stock != null) {
-            stock.setCurrentPrice(getRealTimeStockPrice(ticker));
-        }
-        return stock;
-}
+        return stockRepository.findById(ticker).orElse(null);
+    }
 
-
-    // Update stock information
+    // Update stock
     public Stock updateStock(String ticker, Stock updatedStock) {
         Stock stock = stockRepository.findById(ticker).orElse(null);
         if (stock != null) {
@@ -55,79 +50,60 @@ public class StockService {
         return null;
     }
 
-    // Delete stock by ticker
+    // Delete stock
     public void deleteStock(String ticker) {
         stockRepository.deleteById(ticker);
     }
 
-    // Fetch real-time stock price
+    // Get real-time stock price
     public double getRealTimeStockPrice(String ticker) {
-        String url = String.format(API_URL, ticker);
+        String url = String.format(API_URL, ticker, apiKey);
         RestTemplate restTemplate = new RestTemplate();
         try {
-            // Get stock data from Alpha Vantage API
-            String response = restTemplate.getForObject(url, String.class);
-            // Extract the stock price from the response JSON
-            // Example: Parse JSON to get the latest stock price (you may need to use a JSON
-            // parser like Jackson)
-            return parseStockPrice(response);
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            Map<String, String> quote = (Map<String, String>) response.get("Global Quote");
+            return Double.parseDouble(quote.get("05. price"));
         } catch (Exception e) {
-            e.printStackTrace();
             return 0.0;
         }
     }
 
-    // Helper method to parse the real-time stock price
-
-    private double parseStockPrice(String response) {
-        try {
-            // Initialize Jackson's ObjectMapper
-            ObjectMapper objectMapper = new ObjectMapper();
-
-            // Parse the JSON response
-            JsonNode rootNode = objectMapper.readTree(response);
-
-            // Navigate to the relevant node containing the time series data
-            JsonNode timeSeriesNode = rootNode.path("Time Series (5min)");
-
-            // Get the latest entry (the first key in the object)
-            String latestTimeKey = timeSeriesNode.fieldNames().next();
-            JsonNode latestDataNode = timeSeriesNode.path(latestTimeKey);
-
-            // Extract the "close" price from the latest data node
-            double latestPrice = latestDataNode.path("4. close").asDouble();
-
-            return latestPrice; // Return the parsed price
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0.0; // Default to 0.0 in case of an error
-        }
+    // Portfolio Value
+    public double getTotalPortfolioValue() {
+        return stockRepository.findAll().stream()
+                .mapToDouble(stock -> getRealTimeStockPrice(stock.getTicker()) * stock.getQuantity())
+                .sum();
     }
 
-    // Calculate total portfolio value
-            public double getTotalPortfolioValue() {
-            double totalValue = 0.0;
-            for (Stock stock : getAllStocks()) {
-                double currentPrice = getRealTimeStockPrice(stock.getTicker());
-                stock.setCurrentPrice(currentPrice); // Set the current price
-                totalValue += currentPrice * stock.getQuantity();
-            }
-            return totalValue;
-        }
-
-    // Get top-performing stock
+    // Top-performing stock
     public Stock getTopPerformingStock() {
-        return getAllStocks().stream()
+        return stockRepository.findAll().stream()
                 .max(Comparator.comparingDouble(stock -> getRealTimeStockPrice(stock.getTicker()) - stock.getBuyPrice()))
                 .orElse(null);
     }
 
-    // Get portfolio distribution
+    // Portfolio Distribution
     public Map<String, Double> getPortfolioDistribution() {
         double totalValue = getTotalPortfolioValue();
-        return getAllStocks().stream().collect(Collectors.toMap(
-                Stock::getTicker,
-                stock -> (getRealTimeStockPrice(stock.getTicker()) * stock.getQuantity()) / totalValue * 100
-        ));
+        return stockRepository.findAll().stream()
+                .collect(Collectors.toMap(
+                        Stock::getTicker,
+                        stock -> (getRealTimeStockPrice(stock.getTicker()) * stock.getQuantity()) / totalValue * 100
+                ));
+    }
+
+    // Initialize portfolio with 5 random stocks
+    public List<Stock> initializePortfolio() {
+        List<String> randomTickers = List.of("AAPL", "MSFT", "GOOGL", "AMZN", "META");
+        return randomTickers.stream()
+                .map(ticker -> {
+                    Stock stock = new Stock();
+                    stock.setTicker(ticker);
+                    stock.setName("Company " + ticker);
+                    stock.setQuantity(1);
+                    stock.setBuyPrice(getRealTimeStockPrice(ticker));
+                    return stockRepository.save(stock);
+                })
+                .collect(Collectors.toList());
     }
 }
