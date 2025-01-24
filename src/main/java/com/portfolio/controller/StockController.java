@@ -14,7 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/stocks")
-@CrossOrigin(origins = "http://localhost:3000") // Allow requests from your frontend
+@CrossOrigin(origins = "https://rpd2nf.csb.app/") // Allow requests from your frontend
 public class StockController {
 
     @Autowired
