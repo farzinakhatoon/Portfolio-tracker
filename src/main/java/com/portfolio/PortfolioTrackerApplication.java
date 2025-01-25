@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
 @SpringBootApplication
-@CrossOrigin(origins = "https://dxy42g.csb.app/") 
+@CrossOrigin(origins = "https://23xdcq.csb.app/") 
     
 public class PortfolioTrackerApplication {
 
