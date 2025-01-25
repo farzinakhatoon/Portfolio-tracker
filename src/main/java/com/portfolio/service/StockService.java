@@ -25,7 +25,7 @@ public class StockService {
     @Value("${api.key}")
     private String apiKey;
 
-    private static final String API_URL = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=%s&apikey=%s";
+    private static final String API_URL = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&apikey=demo";
 
     // Add stock
     public Stock addStock(Stock stock) {
