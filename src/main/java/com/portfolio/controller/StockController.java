@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+
+@CrossOrigin(origins = "https://23xdcq.csb.app/")
 @RestController
 @RequestMapping("/api/stocks")
 public class StockController {
