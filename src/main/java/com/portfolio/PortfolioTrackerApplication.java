@@ -5,7 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
 @SpringBootApplication
-@CrossOrigin(origins = "https://23xdcq.csb.app/","famous-bunny-8b432f.netlify.app","*") 
+@CrossOrigin(origins = {"https://example1.com", "https://example2.com"})
+ 
     
 public class PortfolioTrackerApplication {
 
