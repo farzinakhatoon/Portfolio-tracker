@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 
-@CrossOrigin(origins = "https://23xdcq.csb.app/","*","famous-bunny-8b432f.netlify.app")
+@CrossOrigin(origins = {"https://example1.com", "https://example2.com","*"})
 @RestController
 @RequestMapping("/api/stocks")
 public class StockController {
